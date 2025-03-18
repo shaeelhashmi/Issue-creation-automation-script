@@ -1,3 +1,4 @@
+
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
@@ -50,11 +51,15 @@ while elementCount < 10:
             link=element.find_element(By.TAG_NAME,"a").get_attribute("href")
             browser.execute_script(f"window.open('{link}', '_blank');")
             browser.switch_to.window(browser.window_handles[-1])
-            
+            time.sleep(10)
             description = WebDriverWait(browser, 40).until(
-                EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/div/main/react-app/div/div/div/div/div[7]/div/div[1]/div[1]/div/div/div/div/div[2]/div[1]"))
+                EC.presence_of_element_located((By.CLASS_NAME, "markdown-body"))
             ).get_attribute("outerHTML")
-            title=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/react-app/div/div/div/div/div[1]/div/div/div[1]/h1/bdi").text
+            print("Description read")
+            title= WebDriverWait(browser, 40).until(
+                EC.presence_of_element_located((By.TAG_NAME, "bdi"))
+            ).text
+            print("title read")
             if title in already_made_issues_set:
                 raise Exception("Already made issue")
             dictionary[title] = description
@@ -86,4 +91,3 @@ for key in dictionary:
 
 time.sleep(10)
 browser.quit()
-
