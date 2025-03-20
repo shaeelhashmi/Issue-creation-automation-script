@@ -23,7 +23,7 @@ service = Service(gecko_path)
 browser = webdriver.Firefox(service=service, options=options)
 repo_for_making_issues="https://github.com/shaeelhashmi/Issue-testing"
 repo_for_copying_issues="https://github.com/enatega/food-delivery-multivendor"
-browser.get(f"{repo_for_making_issues}+/issues")
+browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
 already_made_issues=browser.find_elements(By.CLASS_NAME,"IssueRow-module__row--XmR1f")
 # Create a hash set to store already made issues
@@ -32,55 +32,75 @@ already_made_issues_set = set()
 # Add all the already made issues to the hash set
 for issue in already_made_issues:
     text=issue.find_element(By.TAG_NAME,"a").text
-    print(text)
     already_made_issues_set.add(text)
 
-browser.execute_script(f"window.open('{repo_for_making_issues}/issues/new?template=BLANK_ISSUE', '_blank');")
-browser.close()
-browser.switch_to.window(browser.window_handles[0])
+
 time.sleep(5)
 print("Visiting......")
 dictionary={}
 elementCount=0
 
 browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page=1', '_blank');")
+
 browser.switch_to.window(browser.window_handles[-1])
-time.sleep(10)
+
+time.sleep(5)
+
 pages_block=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[3]/div[2]/div[2]/nav/div")
-print(pages_block)
+
 pages=pages_block.find_elements(By.TAG_NAME,"a")
 print(len(pages))
 browser.close()
+
 browser.switch_to.window(browser.window_handles[0])
+
 i=1
-while elementCount < 10 and i<=(len(pages)-2):
+
+while elementCount < 5 and i<=(len(pages)-2):
+    print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
+
     browser.switch_to.window(browser.window_handles[-1])
+
     time.sleep(5)
+
     elem=browser.find_elements(By.CLASS_NAME,"IssueRow-module__row--XmR1f")
+
     for element in elem:
+
         try:
+
             link=element.find_element(By.TAG_NAME,"a").get_attribute("href")
+
             browser.execute_script(f"window.open('{link}', '_blank');")
+
             browser.switch_to.window(browser.window_handles[-1])
-            time.sleep(10)
+
+            time.sleep(5)
+
             description = WebDriverWait(browser, 40).until(
                 EC.presence_of_element_located((By.CLASS_NAME, "markdown-body"))
             ).get_attribute("outerHTML")
+
             print("Description read")
+
             title= WebDriverWait(browser, 40).until(
                 EC.presence_of_element_located((By.TAG_NAME, "bdi"))
             ).text
+
             print("title read")
+
             if title in already_made_issues_set:
                 raise Exception("Already made issue")
             dictionary[title] = description
             
             elementCount+=1
-            if elementCount>=10:
+            if elementCount>=5:
                 break
+
         except Exception as e:
             print(f"Error: {e}")
+
         finally:
             browser.close()
             browser.switch_to.window(browser.window_handles[-1])
@@ -90,16 +110,28 @@ while elementCount < 10 and i<=(len(pages)-2):
     browser.switch_to.window(browser.window_handles[0])
 
 print(len(dictionary))
-
+browser.execute_script(f"window.open('{repo_for_making_issues}/issues/new?template=BLANK_ISSUE', '_blank');")
+browser.close()
+browser.switch_to.window(browser.window_handles[0])
+time.sleep(5)
 checkbox=browser.find_element(By.ID,":r1i:")
 if not checkbox.is_selected():
     checkbox.click()
+
 for key in dictionary:
-    browser.find_element(By.ID,":r1:").send_keys(key)
-    browser.find_element(By.ID,":r6:").send_keys(dictionary[key])
+    TitleBoxBox=browser.find_element(By.CLASS_NAME,"CreateIssueFormTitle-module__container--jYx17")
+    print(TitleBoxBox.text)
+    TitleBoxBox.find_element(By.TAG_NAME,"input").send_keys(key)
+    time.sleep(3)
+    print(key)
+    textBoxBox=browser.find_element(By.CLASS_NAME,"CreateIssueForm-module__commentBox--yWrlH")
+    textArea=textBoxBox.find_element(By.TAG_NAME,"textarea")
+    textArea.click()
+    textArea.send_keys(dictionary[key])
+    print(dictionary[key])
+    print("Creating issue",key)
     button=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[3]/div/div[2]/div[2]/button[2]")
     button.click()
     time.sleep(5)
 
-time.sleep(10)
 browser.quit()
