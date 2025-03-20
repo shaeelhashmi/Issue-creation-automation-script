@@ -25,15 +25,23 @@ repo_for_making_issues="https://github.com/shaeelhashmi/Issue-testing"
 repo_for_copying_issues="https://github.com/enatega/food-delivery-multivendor"
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
-already_made_issues=browser.find_elements(By.CLASS_NAME,"IssueRow-module__row--XmR1f")
-# Create a hash set to store already made issues
+already_made_issues=[]
+already_made_issues_pages=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[2]/div[2]/div[2]/nav")
+pages=already_made_issues_pages.find_elements(By.TAG_NAME,"a")
+
+j=1
 already_made_issues_set = set()
+while j<=len(pages)-2:
+    print(f"Page {j}")
+    browser.get(f"{repo_for_making_issues}/issues?page={j}")
+    time.sleep(5)
+    already_made_issues=browser.find_elements(By.CLASS_NAME,"IssueRow-module__row--XmR1f")
+    for issue in already_made_issues:
+        text=issue.find_element(By.TAG_NAME,"a").text
+        already_made_issues_set.add(text)
 
-# Add all the already made issues to the hash set
-for issue in already_made_issues:
-    text=issue.find_element(By.TAG_NAME,"a").text
-    already_made_issues_set.add(text)
-
+    print(len(already_made_issues))
+    j+=1
 
 time.sleep(5)
 print("Visiting......")
