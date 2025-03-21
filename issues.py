@@ -8,6 +8,15 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from selenium.webdriver.common.keys import Keys
 import selenium.common.exceptions
+import re
+
+def rgba_to_hex(rgba):
+    # Extract the RGBA values using regex
+    match = re.match(r'rgba?\((\d+),\s*(\d+),\s*(\d+)', rgba)
+    if match:
+        r, g, b = match.groups()
+        return f'#{int(r):02x}{int(g):02x}{int(b):02x}'
+    return rgba
 
 
 def getPagesLength(browser):
@@ -115,7 +124,7 @@ while elementCount < 10 and i<=length:
                     span=label.find_element(By.TAG_NAME,"span")
                     bg_color = span.value_of_css_property("background-color")
                     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
-                    labels.append((text, bg_color))
+                    labels.append((text, rgba_to_hex(bg_color)))
                 print(labels)
             except selenium.common.exceptions.NoSuchElementException:
                 labels=[]
