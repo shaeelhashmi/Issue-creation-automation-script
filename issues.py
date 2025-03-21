@@ -8,6 +8,15 @@ from selenium.webdriver.support import expected_conditions as EC
 import time
 from selenium.webdriver.common.keys import Keys
 import selenium.common.exceptions
+
+
+def getPagesLength(browser):
+    try:
+        element=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[2]/div[2]/div[2]/nav")
+        pages=element.find_elements(By.TAG_NAME,"a")
+        return len(pages)-2
+    except selenium.common.exceptions.NoSuchElementException:
+        return 1
 # Path to geckodriver
 gecko_path = "C:/Users/Shaeel/Downloads/geckodriver-v0.36.0-win64/geckodriver.exe"
 
@@ -27,12 +36,12 @@ repo_for_copying_issues="https://github.com/enatega/food-delivery-multivendor"
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
 already_made_issues=[]
-already_made_issues_pages=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[2]/div[2]/div[2]/nav")
-pages=already_made_issues_pages.find_elements(By.TAG_NAME,"a")
+length=getPagesLength(browser)
+print(length)
 
 j=1
 already_made_issues_set = set()
-while j<=len(pages)-2:
+while j<=length:
     print(f"Page {j}")
     browser.get(f"{repo_for_making_issues}/issues?page={j}")
     time.sleep(5)
@@ -55,19 +64,17 @@ browser.switch_to.window(browser.window_handles[-1])
 
 time.sleep(5)
 
-pages=[]
-try:
-    pages_block = browser.find_element(By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[3]/div[2]/div[2]/nav/div")
-    pages = pages_block.find_elements(By.TAG_NAME, "a")
-except selenium.common.exceptions.NoSuchElementException:
-    pages = ["1", "2", "3"] 
+
+length=getPagesLength(browser)
+print(length)
+
 browser.close()
 
 browser.switch_to.window(browser.window_handles[0])
 
 i=1
 
-while elementCount < 10 and i<=(len(pages)-2):
+while elementCount < 10 and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
 
