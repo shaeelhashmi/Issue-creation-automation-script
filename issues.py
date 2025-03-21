@@ -107,17 +107,21 @@ while elementCount < 10 and i<=length:
             ).text
 
             print("title read")
-            labelBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/react-app/div/div/div/div/div[7]/div/div[2]/div/div[2]/div[2]/div")
-            labelsLinks=labelBox.find_elements(By.TAG_NAME,"a")
-            labels=[]
-            for label in labelsLinks:
-                span=label.find_element(By.TAG_NAME,"span")
-                bg_color = span.value_of_css_property("background-color")  
-                labels.append((label.text, bg_color))
-            print(labels)
+            try:
+                labelBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/react-app/div/div/div/div/div[7]/div/div[2]/div/div[2]/div[2]/div")
+                labelsLinks=labelBox.find_elements(By.TAG_NAME,"a")
+                labels=[]
+                for label in labelsLinks:
+                    span=label.find_element(By.TAG_NAME,"span")
+                    bg_color = span.value_of_css_property("background-color")
+                    text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+                    labels.append((text, bg_color))
+                print(labels)
+            except selenium.common.exceptions.NoSuchElementException:
+                labels=[]
             if title in already_made_issues_set:
                 raise Exception("Already made issue")
-            dictionary[title] = description
+            dictionary[title] = (description, labels)
             
             elementCount+=1
             if elementCount>=10:
@@ -152,7 +156,7 @@ for key in dictionary:
     textBoxBox=browser.find_element(By.CLASS_NAME,"CreateIssueForm-module__commentBox--yWrlH")
     textArea=textBoxBox.find_element(By.TAG_NAME,"textarea")
     textArea.click()
-    textArea.send_keys(dictionary[key])
+    textArea.send_keys(dictionary[key][0])
     print(dictionary[key])
     print("Creating issue",key)
     button=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[3]/div/div[2]/div[2]/button[2]")
