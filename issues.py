@@ -82,8 +82,8 @@ browser.close()
 browser.switch_to.window(browser.window_handles[0])
 
 i=1
-
-while elementCount < 10 and i<=length:
+labels_set = {}
+while elementCount < 1 and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
 
@@ -114,7 +114,7 @@ while elementCount < 10 and i<=length:
             title= WebDriverWait(browser, 40).until(
                 EC.presence_of_element_located((By.TAG_NAME, "bdi"))
             ).text
-
+            
             print("title read")
             try:
                 labelBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/react-app/div/div/div/div/div[7]/div/div[2]/div/div[2]/div[2]/div")
@@ -125,15 +125,16 @@ while elementCount < 10 and i<=length:
                     bg_color = span.value_of_css_property("background-color")
                     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
                     labels.append((text, rgba_to_hex(bg_color)))
+                    labels_set[text] = rgba_to_hex(bg_color)
                 print(labels)
             except selenium.common.exceptions.NoSuchElementException:
                 labels=[]
-            if title in already_made_issues_set:
-                raise Exception("Already made issue")
+            # if title in already_made_issues_set:
+            #     raise Exception("Already made issue")
             dictionary[title] = (description, labels)
             
             elementCount+=1
-            if elementCount>=10:
+            if elementCount>=1:
                 break
 
         except Exception as e:
@@ -148,10 +149,34 @@ while elementCount < 10 and i<=length:
     browser.switch_to.window(browser.window_handles[0])
 
 print(len(dictionary))
+
+
+        
+
 browser.execute_script(f"window.open('{repo_for_making_issues}/issues/new?template=BLANK_ISSUE', '_blank');")
 browser.close()
 browser.switch_to.window(browser.window_handles[0])
 time.sleep(5)
+# Creating labels
+CreateLabelButtonBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]")
+CreateLabelButton=CreateLabelButtonBox.find_element(By.TAG_NAME,"button")
+CreateLabelButton.click()
+time.sleep(5)
+Repo_labels_Box=WebDriverWait(browser, 10).until(
+    EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[2]"))
+)
+
+Repo_box=Repo_labels_Box.find_element(By.TAG_NAME,"ul")
+Repo_labels=Repo_labels_Box.find_elements(By.TAG_NAME,"li")
+
+for label in Repo_labels:
+    text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+    print(text)
+    if text in labels_set:
+        del labels_set[text]
+for label in labels_set:
+    print("Creating label",label)
+## Creating issues
 checkbox=browser.find_element(By.ID,":r1i:")
 if not checkbox.is_selected():
     checkbox.click()
