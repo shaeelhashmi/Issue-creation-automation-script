@@ -174,8 +174,32 @@ for label in Repo_labels:
     print(text)
     if text in labels_set:
         del labels_set[text]
+browser.execute_script(f"window.open('{repo_for_making_issues}/issues/labels', '_blank');")
+browser.switch_to.window(browser.window_handles[-1])
 for label in labels_set:
     print("Creating label",label)
+    time.sleep(5)
+    labelCreationButtonBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/turbo-frame/div/div/div/div[1]/div[3]")
+    labelCreationButton=labelCreationButtonBox.find_element(By.TAG_NAME,"button")
+    labelCreationButton.click()
+    time.sleep(5)
+    labelCreationBox=WebDriverWait(browser, 10).until(
+        EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/div/main/turbo-frame/div/div/div/form/div[2]"))
+    )
+    labelName=labelCreationBox.find_element(By.ID,"label-name-")
+    labelName.clear()
+    labelName.send_keys(label)
+    labelColor=labelCreationBox.find_element(By.ID,"label-color-")
+    labelColor.clear()
+    labelColor.send_keys(labels_set[label])
+    
+    
+    ButtonBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/turbo-frame/div/div/div/form/div[2]/div")
+    Button=ButtonBox.find_elements(By.TAG_NAME,"button")[1]
+    Button.click()
+    time.sleep(5)
+browser.close()
+browser.switch_to.window(browser.window_handles[0])
 ## Creating issues
 checkbox=browser.find_element(By.ID,":r1i:")
 if not checkbox.is_selected():
