@@ -6,7 +6,8 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
-
+from selenium.webdriver.common.keys import Keys
+import selenium.common.exceptions
 # Path to geckodriver
 gecko_path = "C:/Users/Shaeel/Downloads/geckodriver-v0.36.0-win64/geckodriver.exe"
 
@@ -54,17 +55,19 @@ browser.switch_to.window(browser.window_handles[-1])
 
 time.sleep(5)
 
-pages_block=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[3]/div[2]/div[2]/nav/div")
-
-pages=pages_block.find_elements(By.TAG_NAME,"a")
-print(len(pages))
+pages=[]
+try:
+    pages_block = browser.find_element(By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div/div/div/div/div[2]/div/div/div[3]/div[2]/div[2]/nav/div")
+    pages = pages_block.find_elements(By.TAG_NAME, "a")
+except selenium.common.exceptions.NoSuchElementException:
+    pages = ["1", "2", "3"] 
 browser.close()
 
 browser.switch_to.window(browser.window_handles[0])
 
 i=1
 
-while elementCount < 5 and i<=(len(pages)-2):
+while elementCount < 10 and i<=(len(pages)-2):
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
 
@@ -97,13 +100,20 @@ while elementCount < 5 and i<=(len(pages)-2):
             ).text
 
             print("title read")
-
+            labelBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/react-app/div/div/div/div/div[7]/div/div[2]/div/div[2]/div[2]/div")
+            labelsLinks=labelBox.find_elements(By.TAG_NAME,"a")
+            labels=[]
+            for label in labelsLinks:
+                span=label.find_element(By.TAG_NAME,"span")
+                bg_color = span.value_of_css_property("background-color")  
+                labels.append((label.text, bg_color))
+            print(labels)
             if title in already_made_issues_set:
                 raise Exception("Already made issue")
             dictionary[title] = description
             
             elementCount+=1
-            if elementCount>=5:
+            if elementCount>=10:
                 break
 
         except Exception as e:
