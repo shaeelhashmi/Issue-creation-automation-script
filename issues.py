@@ -9,6 +9,23 @@ import time
 from selenium.webdriver.common.keys import Keys
 import selenium.common.exceptions
 import re
+def get_label_button(browser):
+    try:
+        CreateLabelButtonBox = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]"))
+        )
+        CreateLabelButton = CreateLabelButtonBox.find_element(By.TAG_NAME, "button")
+        CreateLabelButton.click()
+        time.sleep(5)
+        Repo_labels_Box = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[2]"))
+        )
+        Repo_labels = Repo_labels_Box.find_elements(By.TAG_NAME, "li")
+        return Repo_labels
+    except (selenium.common.exceptions.NoSuchElementException, selenium.common.exceptions.TimeoutException) as e:
+        print(f"Error finding label button: {e}")
+        return []
+
 
 def rgba_to_hex(rgba):
     # Extract the RGBA values using regex
@@ -83,7 +100,7 @@ browser.switch_to.window(browser.window_handles[0])
 
 i=1
 labels_set = {}
-while elementCount < 1 and i<=length:
+while elementCount < 10 and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
 
@@ -124,7 +141,7 @@ while elementCount < 1 and i<=length:
                     span=label.find_element(By.TAG_NAME,"span")
                     bg_color = span.value_of_css_property("background-color")
                     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
-                    labels.append((text, rgba_to_hex(bg_color)))
+                    labels.append(text)
                     labels_set[text] = rgba_to_hex(bg_color)
                 print(labels)
             except selenium.common.exceptions.NoSuchElementException:
@@ -134,7 +151,7 @@ while elementCount < 1 and i<=length:
             dictionary[title] = (description, labels)
             
             elementCount+=1
-            if elementCount>=1:
+            if elementCount>=10:
                 break
 
         except Exception as e:
@@ -158,17 +175,8 @@ browser.close()
 browser.switch_to.window(browser.window_handles[0])
 time.sleep(5)
 # Creating labels
-CreateLabelButtonBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]")
-CreateLabelButton=CreateLabelButtonBox.find_element(By.TAG_NAME,"button")
-CreateLabelButton.click()
-time.sleep(5)
-Repo_labels_Box=WebDriverWait(browser, 10).until(
-    EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[2]"))
-)
-
-Repo_box=Repo_labels_Box.find_element(By.TAG_NAME,"ul")
-Repo_labels=Repo_labels_Box.find_elements(By.TAG_NAME,"li")
-
+Repo_labels=get_label_button(browser)
+print(len(Repo_labels))
 for label in Repo_labels:
     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
     print(text)
@@ -192,23 +200,42 @@ for label in labels_set:
     labelColor=labelCreationBox.find_element(By.ID,"label-color-")
     labelColor.clear()
     labelColor.send_keys(labels_set[label])
-    
-    
     ButtonBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/div/main/turbo-frame/div/div/div/form/div[2]/div")
     Button=ButtonBox.find_elements(By.TAG_NAME,"button")[1]
     Button.click()
     time.sleep(5)
 browser.close()
 browser.switch_to.window(browser.window_handles[0])
+
 ## Creating issues
+
+browser.refresh()
+time.sleep(5)
 checkbox=browser.find_element(By.ID,":r1i:")
 if not checkbox.is_selected():
     checkbox.click()
-
 for key in dictionary:
+    ## Creating labels
+    Repo_labels=get_label_button(browser)
+    for label in dictionary[key][1]:
+        try:
+            for labels in Repo_labels:
+                text=labels.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+                print(text,label)
+                if text==label:
+                    element=labels.find_element(By.CLASS_NAME,"prc-ActionList-MultiSelectCheckbox-nK6PJ")
+                    browser.execute_script("arguments[0].click();", element)
+                    time.sleep(2)
+                    break
+        except Exception as e:
+            print(e)
+            pass
+        
+    time.sleep(5)
     TitleBoxBox=browser.find_element(By.CLASS_NAME,"CreateIssueFormTitle-module__container--jYx17")
-    print(TitleBoxBox.text)
-    TitleBoxBox.find_element(By.TAG_NAME,"input").send_keys(key)
+    TitleArea=TitleBoxBox.find_element(By.TAG_NAME,"input")
+    TitleArea.click()
+    TitleArea.send_keys(key)
     time.sleep(3)
     print(key)
     textBoxBox=browser.find_element(By.CLASS_NAME,"CreateIssueForm-module__commentBox--yWrlH")
