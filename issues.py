@@ -1,4 +1,3 @@
-
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.firefox.options import Options
@@ -9,13 +8,15 @@ import time
 from selenium.webdriver.common.keys import Keys
 import selenium.common.exceptions
 import re
-def get_label_button(browser):
-    try:
+def show_labels(browser):
         CreateLabelButtonBox = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]"))
         )
         CreateLabelButton = CreateLabelButtonBox.find_element(By.TAG_NAME, "button")
         CreateLabelButton.click()
+def get_label_button(browser):
+    try:
+        show_labels(browser)
         time.sleep(5)
         Repo_labels_Box = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[2]"))
@@ -57,7 +58,7 @@ options.add_argument(firefox_profile_path)
 # Set up the Firefox driver with the profile
 service = Service(gecko_path)
 browser = webdriver.Firefox(service=service, options=options)
-repo_for_making_issues="https://github.com/shaeelhashmi/Issue-testing"
+repo_for_making_issues="https://github.com/patriciaperez90/online-food-ordering-app-in-react-native"
 repo_for_copying_issues="https://github.com/enatega/food-delivery-multivendor"
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
@@ -100,7 +101,8 @@ browser.switch_to.window(browser.window_handles[0])
 
 i=1
 labels_set = {}
-while elementCount < 10 and i<=length:
+total_elements=3
+while elementCount < total_elements and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
 
@@ -141,17 +143,18 @@ while elementCount < 10 and i<=length:
                     span=label.find_element(By.TAG_NAME,"span")
                     bg_color = span.value_of_css_property("background-color")
                     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+                    text=text.strip()
                     labels.append(text)
                     labels_set[text] = rgba_to_hex(bg_color)
                 print(labels)
             except selenium.common.exceptions.NoSuchElementException:
                 labels=[]
-            # if title in already_made_issues_set:
-            #     raise Exception("Already made issue")
+            if title in already_made_issues_set:
+                raise Exception("Already made issue")
             dictionary[title] = (description, labels)
             
             elementCount+=1
-            if elementCount>=10:
+            if elementCount>=total_elements:
                 break
 
         except Exception as e:
@@ -179,8 +182,10 @@ Repo_labels=get_label_button(browser)
 print(len(Repo_labels))
 for label in Repo_labels:
     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+    text=text.strip()
     print(text)
     if text in labels_set:
+        print("Deleting label",text)
         del labels_set[text]
 browser.execute_script(f"window.open('{repo_for_making_issues}/issues/labels', '_blank');")
 browser.switch_to.window(browser.window_handles[-1])
@@ -209,27 +214,41 @@ browser.switch_to.window(browser.window_handles[0])
 
 ## Creating issues
 
-browser.refresh()
-time.sleep(5)
+
 checkbox=browser.find_element(By.ID,":r1i:")
 if not checkbox.is_selected():
     checkbox.click()
 for key in dictionary:
+    browser.refresh()
+    time.sleep(5)
     ## Creating labels
-    Repo_labels=get_label_button(browser)
-    for label in dictionary[key][1]:
+    show_labels(browser)
+    time.sleep(5)
+    labels_to_make=dictionary[key][1]
+    for label_to_make in labels_to_make:
         try:
-            for labels in Repo_labels:
-                text=labels.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
-                print(text,label)
-                if text==label:
-                    element=labels.find_element(By.CLASS_NAME,"prc-ActionList-MultiSelectCheckbox-nK6PJ")
+            input_Box = WebDriverWait(browser, 10).until(
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[1]"
+            ))
+            )
+            input = input_Box.find_element(By.TAG_NAME, "input")
+            input.click()
+            input.clear()
+            input.send_keys(label_to_make)
+            time.sleep(3)
+            labelBox=browser.find_element(By.XPATH,"/html/body/div[4]/div[3]/div/div/div[2]/div[2]")
+            labels=labelBox.find_elements(By.TAG_NAME,"li")
+            for label in labels:
+            
+                text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+                if text in dictionary[key][1]:
+                    element=label.find_element(By.CLASS_NAME,"prc-ActionList-MultiSelectCheckbox-nK6PJ")
                     browser.execute_script("arguments[0].click();", element)
                     time.sleep(2)
                     break
         except Exception as e:
             print(e)
-            pass
+
         
     time.sleep(5)
     TitleBoxBox=browser.find_element(By.CLASS_NAME,"CreateIssueFormTitle-module__container--jYx17")
@@ -247,5 +266,5 @@ for key in dictionary:
     button=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[3]/div/div[2]/div[2]/button[2]")
     button.click()
     time.sleep(5)
-
+time.sleep(5)
 browser.quit()
