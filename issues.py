@@ -58,7 +58,7 @@ options.add_argument(firefox_profile_path)
 # Set up the Firefox driver with the profile
 service = Service(gecko_path)
 browser = webdriver.Firefox(service=service, options=options)
-repo_for_making_issues="https://github.com/patriciaperez90/online-food-ordering-app-in-react-native"
+repo_for_making_issues="https://github.com/patriciaperez90/script-for-food"
 repo_for_copying_issues="https://github.com/enatega/food-delivery-multivendor"
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
@@ -101,7 +101,7 @@ browser.switch_to.window(browser.window_handles[0])
 
 i=1
 labels_set = {}
-total_elements=3
+total_elements=10
 while elementCount < total_elements and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
@@ -151,6 +151,7 @@ while elementCount < total_elements and i<=length:
                 labels=[]
             if title in already_made_issues_set:
                 raise Exception("Already made issue")
+            labels = [label.lower() for label in labels]
             dictionary[title] = (description, labels)
             
             elementCount+=1
@@ -180,13 +181,19 @@ time.sleep(5)
 # Creating labels
 Repo_labels=get_label_button(browser)
 print(len(Repo_labels))
+lowerCase_labels_set = {}
+for label in labels_set:
+    lowerCase_labels_set[label.lower()] = label
 for label in Repo_labels:
     text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
     text=text.strip()
+    text=text.lower()
     print(text)
-    if text in labels_set:
+    if text in lowerCase_labels_set:
         print("Deleting label",text)
-        del labels_set[text]
+        
+        del labels_set[lowerCase_labels_set[text]]
+        del lowerCase_labels_set[text]
 browser.execute_script(f"window.open('{repo_for_making_issues}/issues/labels', '_blank');")
 browser.switch_to.window(browser.window_handles[-1])
 for label in labels_set:
@@ -238,9 +245,13 @@ for key in dictionary:
             time.sleep(3)
             labelBox=browser.find_element(By.XPATH,"/html/body/div[4]/div[3]/div/div/div[2]/div[2]")
             labels=labelBox.find_elements(By.TAG_NAME,"li")
-            for label in labels:
             
+            for label in labels:
+                
+
                 text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+                text=text.strip()
+                text=text.lower()
                 if text in dictionary[key][1]:
                     element=label.find_element(By.CLASS_NAME,"prc-ActionList-MultiSelectCheckbox-nK6PJ")
                     browser.execute_script("arguments[0].click();", element)
