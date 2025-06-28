@@ -10,7 +10,7 @@ import selenium.common.exceptions
 import re
 def show_labels(browser):
         CreateLabelButtonBox = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]"))
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div[2]/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]"))
         )
         CreateLabelButton = CreateLabelButtonBox.find_element(By.TAG_NAME, "button")
         CreateLabelButton.click()
@@ -19,9 +19,10 @@ def get_label_button(browser):
         show_labels(browser)
         time.sleep(5)
         Repo_labels_Box = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[2]"))
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div[1]/div[3]/div/div/div[2]/div[2]"))
         )
-        Repo_labels = Repo_labels_Box.find_elements(By.TAG_NAME, "li")
+        Repo_labels_list = Repo_labels_Box.find_element(By.TAG_NAME, "ul")
+        Repo_labels = Repo_labels_list.find_elements(By.TAG_NAME, "li")
         return Repo_labels
     except (selenium.common.exceptions.NoSuchElementException, selenium.common.exceptions.TimeoutException) as e:
         print(f"Error finding label button: {e}")
@@ -58,8 +59,8 @@ options.add_argument(firefox_profile_path)
 # Set up the Firefox driver with the profile
 service = Service(gecko_path)
 browser = webdriver.Firefox(service=service, options=options)
-repo_for_making_issues="Repo_For_Making_Issues"
-repo_for_copying_issues="Repo_For_Copying_Issues"
+repo_for_making_issues="https://github.com/shaeelhashmi/Issue-making"
+repo_for_copying_issues="https://github.com/shaeelhashmi/TempWithIssues"
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
 already_made_issues=[]
@@ -68,7 +69,7 @@ print(length)
 
 j=1
 already_made_issues_set = set()
-already_made_issues_set.add("which branch is the updated")
+
 while j<=length:
     print(f"Page {j}")
     browser.get(f"{repo_for_making_issues}/issues?page={j}")
@@ -223,7 +224,8 @@ browser.switch_to.window(browser.window_handles[0])
 ## Creating issues
 
 time.sleep(5)
-checkbox=browser.find_element(By.ID,":r1k:")
+Box_check=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div[2]/div/div[2]/div/div/div[3]/div/div[2]/div[1]")
+checkbox= Box_check.find_element(By.TAG_NAME,"input")
 if not checkbox.is_selected():
     checkbox.click()
 for key in dictionary:
@@ -236,7 +238,7 @@ for key in dictionary:
     for label_to_make in labels_to_make:
         try:
             input_Box = WebDriverWait(browser, 10).until(
-            EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/div[3]/div/div/div[2]/div[1]"
+            EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div[1]/div[3]/div/div/div[2]/div[1]"
             ))
             )
             input = input_Box.find_element(By.TAG_NAME, "input")
@@ -244,17 +246,16 @@ for key in dictionary:
             input.clear()
             input.send_keys(label_to_make)
             time.sleep(3)
-            labelBox=browser.find_element(By.XPATH,"/html/body/div[4]/div[3]/div/div/div[2]/div[2]")
-            labels=labelBox.find_elements(By.TAG_NAME,"li")
+            labelBox=browser.find_element(By.XPATH,"/html/body/div[1]/div[5]/main/react-app/div/div[1]/div[3]/div/div/div[2]/div[2]")
+            label_list=labelBox.find_element(By.TAG_NAME,"ul")
+            labels=label_list.find_elements(By.TAG_NAME,"li")
             
             for label in labels:
-                
-
-                text=label.find_element(By.CLASS_NAME,"prc-Text-Text-0ima0").text
+                text=label.find_element(By.ID,":r2l:--label").text
                 text=text.strip()
                 text=text.lower()
                 if text in dictionary[key][1]:
-                    element=label.find_element(By.CLASS_NAME,"prc-ActionList-MultiSelectCheckbox-nK6PJ")
+                    element=label.find_element(By.CLASS_NAME,"prc-ActionList-LeadingAction-Oy04M")
                     browser.execute_script("arguments[0].click();", element)
                     time.sleep(2)
                     break
