@@ -58,8 +58,8 @@ options.add_argument(firefox_profile_path)
 # Set up the Firefox driver with the profile
 service = Service(gecko_path)
 browser = webdriver.Firefox(service=service, options=options)
-repo_for_making_issues="https://github.com/patriciaperez90/script-for-food"
-repo_for_copying_issues="https://github.com/enatega/food-delivery-multivendor"
+repo_for_making_issues="Repo_For_Making_Issues"
+repo_for_copying_issues="Repo_For_Copying_Issues"
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
 already_made_issues=[]
@@ -68,6 +68,7 @@ print(length)
 
 j=1
 already_made_issues_set = set()
+already_made_issues_set.add("which branch is the updated")
 while j<=length:
     print(f"Page {j}")
     browser.get(f"{repo_for_making_issues}/issues?page={j}")
@@ -101,7 +102,7 @@ browser.switch_to.window(browser.window_handles[0])
 
 i=1
 labels_set = {}
-total_elements=10
+total_elements=3
 while elementCount < total_elements and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
@@ -221,8 +222,8 @@ browser.switch_to.window(browser.window_handles[0])
 
 ## Creating issues
 
-
-checkbox=browser.find_element(By.ID,":r1i:")
+time.sleep(5)
+checkbox=browser.find_element(By.ID,":r1k:")
 if not checkbox.is_selected():
     checkbox.click()
 for key in dictionary:
