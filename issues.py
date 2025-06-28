@@ -6,8 +6,12 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 from selenium.webdriver.common.keys import Keys
+
 import selenium.common.exceptions
 import re
+from dotenv import load_dotenv
+load_dotenv()
+import os
 def show_labels(browser):
         CreateLabelButtonBox = WebDriverWait(browser, 10).until(
             EC.presence_of_element_located((By.XPATH, "/html/body/div[1]/div[5]/main/react-app/div/div[2]/div/div[2]/div/div/div[2]/div/div[2]/div/div[2]"))
@@ -46,10 +50,10 @@ def getPagesLength(browser):
     except selenium.common.exceptions.NoSuchElementException:
         return 1
 # Path to geckodriver
-gecko_path = "C:/Users/Shaeel/Downloads/geckodriver-v0.36.0-win64/geckodriver.exe"
+gecko_path = os.getenv("Gecko_Driver_Path")
 
 # Path to your existing Firefox profile
-firefox_profile_path = "C:/Users/Shaeel/AppData/Roaming/Mozilla/Firefox/Profiles/0y94p5y9.default-release"
+firefox_profile_path = os.getenv("FireFox_Profile_Path")
 
 # Configure Firefox options
 options = Options()
@@ -59,8 +63,8 @@ options.add_argument(firefox_profile_path)
 # Set up the Firefox driver with the profile
 service = Service(gecko_path)
 browser = webdriver.Firefox(service=service, options=options)
-repo_for_making_issues="https://github.com/shaeelhashmi/Issue-making"
-repo_for_copying_issues="https://github.com/shaeelhashmi/TempWithIssues"
+repo_for_making_issues= os.getenv("Repo_for_Making_Issues")
+repo_for_copying_issues= os.getenv("Repo_for_Copying_Issues")
 browser.get(f"{repo_for_making_issues}/issues")
 time.sleep(5)
 already_made_issues=[]
