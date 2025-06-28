@@ -107,7 +107,7 @@ browser.switch_to.window(browser.window_handles[0])
 
 i=1
 labels_set = {}
-total_elements=3
+total_elements=int(os.getenv("Total_Issues", 0))
 while elementCount < total_elements and i<=length:
     print(f"Page {i}")
     browser.execute_script(f"window.open('{repo_for_copying_issues}/issues?page={i}', '_blank');")
